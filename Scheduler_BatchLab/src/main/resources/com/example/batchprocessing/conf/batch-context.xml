@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader"
+		p:resource="classpath:sample-data.csv"
+		p:name="personItemReader"
+	>
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer">
+					<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer"
+						p:delimiter=","
+						p:names="firstName, lastName"
+					/>
+				</property>
+				<property name="fieldSetMapper">
+					<bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper"
+						p:targetType="com.example.batchprocessing.Person"
+					/>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="personItemProcessor" class="com.example.batchprocessing.PersonItemProcessor" />
+
+	<bean id="jdbcBatchItemWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter"
+		p:dataSource-ref="dataSource"
+		p:sql="INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)"
+	>
+		<property name="itemSqlParameterSourceProvider">
+			<bean class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+		</property>
+	</bean>
+
+	<batch:job id="personJob">
+		<batch:listeners>
+			<batch:listener>
+				<bean class="com.example.batchprocessing.JobCompletionNotificationListener"
+					c:jdbcTemplate-ref="jdbcTemplate"
+				/>
+			</batch:listener>
+		</batch:listeners>
+		<batch:step id="step1">
+			<batch:tasklet>
+			<!-- commit-interval 청크 사이즈 결정 -->
+				<batch:chunk
+					commit-interval="10" 
+					reader="flatFileItemReader"
+					processor="personItemProcessor"
+					writer="jdbcBatchItemWriter"
+				/>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+	
+	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean" 
+		p:dataSource-ref="dataSource"
+		p:tablePrefix-ref="transactionManager"
+	/>
+	
+	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
+		p:jobRepository-ref="jobRepository"
+	/>
+
+</beans>

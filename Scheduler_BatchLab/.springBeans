@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beansProjectDescription>
+	<version>1</version>
+	<pluginVersion><![CDATA[3.9.11.201912160804-RELEASE]]></pluginVersion>
+	<configSuffixes>
+		<configSuffix><![CDATA[xml]]></configSuffix>
+	</configSuffixes>
+	<enableImports><![CDATA[false]]></enableImports>
+	<configs>
+		<config>src/main/resources/kr/or/ddit/springtask/conf/task-context.xml</config>
+		<config>src/main/resources/kr/or/ddit/quartz/conf/quartz-context.xml</config>
+		<config>src/main/resources/com/example/batchprocessing/conf/datasource-context.xml</config>
+		<config>src/main/resources/com/example/batchprocessing/conf/batch-context.xml</config>
+	</configs>
+	<autoconfigs>
+	</autoconfigs>
+	<configSets>
+		<configSet>
+			<name><![CDATA[batch-config]]></name>
+			<allowBeanDefinitionOverriding>true</allowBeanDefinitionOverriding>
+			<incomplete>false</incomplete>
+			<configs>
+				<config>src/main/resources/com/example/batchprocessing/conf/batch-context.xml</config>
+				<config>src/main/resources/com/example/batchprocessing/conf/datasource-context.xml</config>
+			</configs>
+			<profiles>
+			</profiles>
+		</configSet>
+	</configSets>
+</beansProjectDescription>
